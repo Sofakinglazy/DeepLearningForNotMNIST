@@ -15,6 +15,8 @@ train_size = 200000     # training set size
 valid_size = 10000      # validation set size
 test_size = 10000       # testing set size
 
+pickle_file = 'notMNIST.pickle'
+
 def make_array(rows, img_size):
     if rows:
         dataset = np.ndarray((rows, img_size, img_size), dtype = np.float32)
@@ -66,6 +68,17 @@ def merge_datasets(pickle_files, train_size, valid_size = 0):
             raise
     return train_dataset, train_labels, valid_dataset, valid_labels
 
+def save_datasets(**kwargs):
+    try:
+        with open(pickle_file, 'wb') as f:
+            save = kwargs
+            pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
+            f.close()
+            print('Successfully save the object.')
+    except Exception as e:
+        print('Unable to save data to {}: {}'.format(pickle_file, e))
+        raise
+
 def main():
     train_filename = maybe_download('notMNIST_large.tar.gz', 247336696)
     test_filename = maybe_download('notMNIST_small.tar.gz', 8458043)
@@ -83,5 +96,14 @@ def main():
     train_dataset, train_labels = randomise(train_dataset, train_labels)
     valid_dataset, valid_labels = randomise(valid_dataset, valid_labels)
     test_dataset, test_labels = randomise(test_dataset, test_labels)
+    save_pack = {
+            'train_dataset' : train_dataset,
+            'valid_dataset' : valid_dataset,
+            'test_dataset'  : test_dataset,
+            'train_labels'  : train_labels,
+            'valid_labels'  : valid_labels,
+            'test_labels'   : test_labels
+        }
+    save_datasets(**save_pack)
 
 if __name__ == '__main__': main()
