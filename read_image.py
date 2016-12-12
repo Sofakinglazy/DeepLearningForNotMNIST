@@ -11,7 +11,6 @@ import shutil
 from download import maybe_download
 from extract import maybe_extract
 
-
 image_size = 28 # image width and height
 pixel_depth = 255.0 # the max value of each pixel
 
@@ -46,7 +45,6 @@ def tidy_pickles(directory):
     '''
         tidy the pickles into a single folder pickles
     '''
-    if
     directory, _ = os.path.split(directory)
     pickle_folder = os.path.join(directory, 'pickles')
     for file in os.listdir(directory):
