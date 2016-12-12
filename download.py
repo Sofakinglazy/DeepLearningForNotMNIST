@@ -36,6 +36,7 @@ def maybe_download(filename, expected_bytes, force = False):
     '''Download a file if is not in the directory and
     make sure it is the right size'''
     if force or not os.path.exists(filename):
+        # override the exsited files by setting force = True
         print('Attempting to download:', filename)
         filename, _ = urlretrieve(url + filename, filename,
             reporthook)
