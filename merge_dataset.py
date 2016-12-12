@@ -23,6 +23,13 @@ def make_array(rows, img_size):
         dataset, labels = None, None
     return dataset, labels
 
+def randomise(dataset, labels):
+    permutation = np.random.permutation(labels.shape[0])
+    shuffled_dataset = dataset[permutation, :, :]
+    shuffled_labels = labels[permutation]
+    print('Done shuffle the dataset and labels.')
+    return shuffled_dataset, shuffled_labels
+
 def merge_datasets(pickle_files, train_size, valid_size = 0):
     num_classes = len(pickle_files)
     train_dataset, train_labels = make_array(train_size, image_size)
@@ -73,5 +80,8 @@ def main():
     print('Training:', train_dataset.shape, train_labels.shape)
     print('Validation:', valid_dataset.shape, valid_labels.shape)
     print('Test:', test_dataset.shape, test_labels.shape)
+    train_dataset, train_labels = randomise(train_dataset, train_labels)
+    valid_dataset, valid_labels = randomise(valid_dataset, valid_labels)
+    test_dataset, test_labels = randomise(test_dataset, test_labels)
 
 if __name__ == '__main__': main()
