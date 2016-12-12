@@ -15,20 +15,27 @@ np.random.seed(133)
 
 def maybe_extract(filename, force = False):
     root = os.path.splitext(os.path.splitext(filename)[0])[0] # get rid of tar.gz
+    after_read = False
     if os.path.isdir(root) and not force:
         print('{} is alread present. Skip extraction of {}'.format(root, filename))
+        if os.path.exists(filename):
+            after_read = True
     else:
         print('Extracting data for {}. This may take a while. Please wait.'.format(filename))
         tar = tarfile.open(filename)
         sys.stdout.flush()
         tar.extractall()
         tar.close()
+        after_read = True
     data_foladers = [
         os.path.join(root, d) for d in sorted(os.listdir(root))
         if os.path.isdir(os.path.join(root, d))]
     if len(data_foladers) != num_class:
         raise Exception('Expected {} folders. Found {} instead.'.format(
             num_class, len(data_foladers)))
+    # remove the tar file after extracted
+    if after_read:
+        os.remove(filename)
     print(data_foladers)
     return data_foladers
 
