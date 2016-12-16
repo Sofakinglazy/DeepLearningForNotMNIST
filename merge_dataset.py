@@ -6,6 +6,7 @@
 import numpy as np
 import scipy
 import pickle
+import os
 from download import maybe_download
 from extract import maybe_extract
 from read_image import maybe_pickle
@@ -16,6 +17,30 @@ valid_size = 10000      # validation set size
 test_size = 10000       # testing set size
 
 pickle_file = 'notMNIST.pickle'
+random_seed = 0         # any set number as a seed is fine
+indics = None           # define later in shuffled_indics func
+first_time = True       # only randomise the img_set once
+
+# A globa indics array keeps track on the index of used data
+# so that it won't be used for other purpose
+# def make_indics_array(nclass, length):
+#     global indics # [nclass, length of img_set]
+#     if first_time:
+#         indics = np.ndarray((nclass, length), dtype = np.int32)
+#         for i in range(0, nclass):
+#             indics[i, :] = np.random.permutation(length)
+#         first_time = False
+#         print(indics.shape)
+
+# it should only shuffle once and keep track for the used data
+# pop the index if the items have been used
+def shuffled_indics(length):
+    global indics, first_time
+    if not first_time:
+        return
+    np.random.seed(random_seed)
+    indics = np.random.permutation(length)
+    first_time = False
 
 def make_array(rows, img_size):
     if rows:
@@ -36,18 +61,23 @@ def merge_datasets(pickle_files, train_size, valid_size = 0):
     num_classes = len(pickle_files)
     train_dataset, train_labels = make_array(train_size, image_size)
     valid_dataset, valid_labels = make_array(valid_size, image_size)
-    tsize_per_class = train_size // num_classes
-    vsize_per_class = valid_size // num_classes
+    tsize_per_class = train_size // num_classes # number required in per class for training
+    vsize_per_class = valid_size // num_classes # number required in per class for validation
 
     start_t, start_v = 0, 0
     end_t, end_v = tsize_per_class, vsize_per_class
     end_l = tsize_per_class + vsize_per_class # total length
+
     for label, pickle_file in enumerate(pickle_files):
+        global indics, first_time
+        first_time = True
         try:
             with open(pickle_file, 'rb') as f:
                 img_set = pickle.load(f)
-                # shuffle the imagesto have random training and validation set
-                np.random.shuffle(img_set)
+                # shuffle the images to have random training and validation set
+                # np.random.shuffle(img_set)
+                shuffled_indics(img_set.shape[0])
+                img_set = img_set[indics, :, :]
                 # for validation set
                 if valid_dataset is not None:
                     valid_image = img_set[:vsize_per_class, :, :]   # first set as validation
@@ -56,12 +86,15 @@ def merge_datasets(pickle_files, train_size, valid_size = 0):
                     valid_labels[start_v:end_v] = label
                     start_v += vsize_per_class
                     end_v += vsize_per_class
-
+                # for training set
                 train_image = img_set[vsize_per_class:end_l, :, :]  # the rest for training set
                 train_dataset[start_t:end_t, :, :] = train_image
                 train_labels[start_t:end_t] = label
                 start_t += tsize_per_class
                 end_t += tsize_per_class
+
+                # pop those indics so it wont be used again
+                indics = np.delete(indics, range(0, end_l))
         except Exception as e:
             print('Unable to process the data form {}: e'.format(
                     pickle_file, e))
@@ -74,7 +107,10 @@ def save_datasets(**kwargs):
             save = kwargs
             pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
             f.close()
-            print('Successfully save the object.')
+            # show status
+            statinfo = os.stat(pickle_file)
+            print('Save successfully. File size: {}'.format(
+                    statinfo.st_size))
     except Exception as e:
         print('Unable to save data to {}: {}'.format(pickle_file, e))
         raise
