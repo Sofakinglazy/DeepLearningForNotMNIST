@@ -7,12 +7,14 @@ from sklearn.linear_model import LogisticRegression
 import numpy as np
 import os
 import pickle
+from config_parser import write_config, read_config
 
+config_file = 'config.ini'
+# if not config_file:
+write_config()
+
+image_size, train_size, valid_size, test_size = read_config()
 pickle_file = 'notMNIST.pickle'
-image_size = 28         # image width and height
-train_size = 200000     # training set size
-valid_size = 10000      # validation set size
-test_size = 10000       # testing set size
 '''
 names = {
         'train_dataset' : train_dataset,
@@ -65,15 +67,12 @@ def main():
     print('Model has been created')
     _train_dataset = flatten_array(train_dataset)
     _train_labels = flatten_array(train_labels)
+    _test_dataset = flatten_array(test_dataset)
+    _test_labels = flatten_array(test_labels)
     model = model.fit(_train_dataset, _train_labels)
     print('Done fitting the model')
-    # for i in range(0, 1):
-    #     reshaped_features = train_dataset[i, :, :].reshape(-1, 1)
-    #     print(reshaped_features.shape)
-    #     print(train_labels[i])
-    #     model = model.fit(reshaped_features, train_labels[i])
-    # score = model.score(test_dataset, test_labels)
-    # print(score)
+    score = model.score(_test_dataset, _test_labels)
+    print(score)
 
 if __name__ == '__main__': main()
 

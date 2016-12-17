@@ -10,27 +10,24 @@ import os
 from download import maybe_download
 from extract import maybe_extract
 from read_image import maybe_pickle
+from config_parser import write_config, read_config
 
-image_size = 28         # image width and height
-train_size = 200000     # training set size
-valid_size = 10000      # validation set size
-test_size = 10000       # testing set size
+config_file = 'config.ini'
+# if not config_file:
+write_config()
+image_size, train_size, valid_size, test_size = read_config()
+
+# image_size = 28         # image width and height
+# train_size = 200000     # training set size
+# valid_size = 10000      # validation set size
+# test_size = 10000       # testing set size
 
 pickle_file = 'notMNIST.pickle'
 random_seed = 0         # any set number as a seed is fine
 indics = None           # define later in shuffled_indics func
 first_time = True       # only randomise the img_set once
 
-# A globa indics array keeps track on the index of used data
-# so that it won't be used for other purpose
-# def make_indics_array(nclass, length):
-#     global indics # [nclass, length of img_set]
-#     if first_time:
-#         indics = np.ndarray((nclass, length), dtype = np.int32)
-#         for i in range(0, nclass):
-#             indics[i, :] = np.random.permutation(length)
-#         first_time = False
-#         print(indics.shape)
+
 
 # it should only shuffle once and keep track for the used data
 # pop the index if the items have been used
